@@ -1,0 +1,39 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+       - "8080:80"
+       - "443:443"
+    environment:
+      - API_BACKEND=http://localhost:2223
+      - SOCKET_BACKEND=http://localhost:2223
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "2223:2223"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  dev:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - /media/ZimaOS-HD/AppData:/app
+    ports:
+      - "5175:5173"
+      - "5176:5174"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:2223
+      - VITE_SOCKET_URL=ws://localhost:2223
+    profiles:
+      - dev
