@@ -5,7 +5,7 @@
 [![Docker Stars](https://img.shields.io/docker/stars/brgjr10/kaleidosync?logo=docker&style=flat)](https://hub.docker.com/repository/docker/brgjr10/kaleidosync)
 [![GitHub release](https://img.shields.io/github/v/release/brgjr10/kaleidosync-docker?logo=github&style=flat)](https://github.com/brgjr10/kaleidosync-docker/releases)
 [![GitHub Packages](https://img.shields.io/badge/ghcr.io-kaleidosync-blue?logo=github&style=flat)](https://github.com/brgjr10/kaleidosync-docker/packages)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/brgjr10/kaleidosync-docker/docker-publish.yml?branch=main&style=flat)](https://github.com/brgjr10/kaleidosync-docker/actions/workflows/docker-publish.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/brgjr10/kaleidosync-docker/docker-publish.yml?branch=master&style=flat)](https://github.com/brgjr10/kaleidosync-docker/actions/workflows/docker-publish.yml)
 
 Fork of [zachwinter/kaleidosync](https://github.com/zachwinter/kaleidosync), containerized for Docker with Spotify OAuth fixes and audio-analysis-backed now-playing.
 
