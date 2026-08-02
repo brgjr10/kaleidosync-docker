@@ -3,6 +3,7 @@ name: Build & Publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   docker:
@@ -32,35 +33,51 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (Docker Hub)
-        id: meta-dockerhub
-        uses: docker/metadata-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: |
-            brgjr10/kaleidosync
-            brgjr10/kaleidosync-api
-          tags: |
-            type=ref,event=release
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+      - name: Extract version metadata
+        id: meta
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          VERSION="${TAG_NAME#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-      - name: Extract metadata (GitHub Packages)
-        id: meta-ghcr
-        uses: docker/metadata-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: |
-            ghcr.io/brgjr10/kaleidosync
-            ghcr.io/brgjr10/kaleidosync-api
-          tags: |
-            type=ref,event=release
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "major_minor=$MAJOR.$MINOR" >> $GITHUB_OUTPUT
+
+          {
+            echo "brgjr10/kaleidosync:${TAG_NAME}"
+            echo "brgjr10/kaleidosync:${VERSION}"
+            echo "brgjr10/kaleidosync:${MAJOR}.${MINOR}"
+            echo "brgjr10/kaleidosync:${MAJOR}"
+            echo "brgjr10/kaleidosync:latest"
+            echo "ghcr.io/brgjr10/kaleidosync:${TAG_NAME}"
+            echo "ghcr.io/brgjr10/kaleidosync:${VERSION}"
+            echo "ghcr.io/brgjr10/kaleidosync:${MAJOR}.${MINOR}"
+            echo "ghcr.io/brgjr10/kaleidosync:${MAJOR}"
+            echo "ghcr.io/brgjr10/kaleidosync:latest"
+          } > /tmp/web-tags.txt
+
+          {
+            echo "brgjr10/kaleidosync-api:${TAG_NAME}"
+            echo "brgjr10/kaleidosync-api:${VERSION}"
+            echo "brgjr10/kaleidosync-api:${MAJOR}.${MINOR}"
+            echo "brgjr10/kaleidosync-api:${MAJOR}"
+            echo "brgjr10/kaleidosync-api:latest"
+            echo "ghcr.io/brgjr10/kaleidosync-api:${TAG_NAME}"
+            echo "ghcr.io/brgjr10/kaleidosync-api:${VERSION}"
+            echo "ghcr.io/brgjr10/kaleidosync-api:${MAJOR}.${MINOR}"
+            echo "ghcr.io/brgjr10/kaleidosync-api:${MAJOR}"
+            echo "ghcr.io/brgjr10/kaleidosync-api:latest"
+          } > /tmp/api-tags.txt
+
+          echo "web_tags<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/web-tags.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "api_tags<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/api-tags.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push web image
         uses: docker/build-push-action@v5
@@ -68,8 +85,11 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta-dockerhub.tags }}, ${{ steps.meta-ghcr.tags }}
-          labels: ${{ steps.meta-dockerhub.labels }}, ${{ steps.meta-ghcr.labels }}
+          tags: ${{ steps.meta.outputs.web_tags }}
+          labels: |
+            org.opencontainers.image.title=kaleidosync-web
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.source=https://github.com/brgjr10/kaleidosync-docker
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -79,7 +99,10 @@ jobs:
           context: .
           file: ./Dockerfile.api
           push: true
-          tags: ${{ steps.meta-dockerhub.tags }}, ${{ steps.meta-ghcr.tags }}
-          labels: ${{ steps.meta-dockerhub.labels }}, ${{ steps.meta-ghcr.labels }}
+          tags: ${{ steps.meta.outputs.api_tags }}
+          labels: |
+            org.opencontainers.image.title=kaleidosync-api
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.source=https://github.com/brgjr10/kaleidosync-docker
           cache-from: type=gha
           cache-to: type=gha,mode=max
