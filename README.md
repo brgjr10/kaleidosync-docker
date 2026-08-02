@@ -11,6 +11,8 @@ Fork of [zachwinter/kaleidosync](https://github.com/zachwinter/kaleidosync), con
 
 WebGL music visualizer running in Docker. Frontend is served by nginx on port `8080`, Spotify auth is handled by a separate Express API container on port `2223`.
 
+<img width="1798" height="839" alt="image" src="https://github.com/user-attachments/assets/a56e54ff-d1d8-488f-9c28-d0aba705ab09" />
+
 ## Quick start
 
 ### Using pre-built images
